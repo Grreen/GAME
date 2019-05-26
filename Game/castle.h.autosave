@@ -1,0 +1,18 @@
+#ifndef CASTLE_H
+#define CASTLE_H
+#include <QPixmap>
+
+#include "drow.h"
+
+class Castle : public Drow//класс замка
+{
+    int x_min, x_max;//Координаты верхнего левого угла
+    int y_min, y_max;//Координаты нижнего правого угла
+    float health;//Здоровье замка
+    QPixmap image;//изображение замка
+
+
+    void drow_castle();//рисование замка
+};
+
+#endif // CASTLE_H

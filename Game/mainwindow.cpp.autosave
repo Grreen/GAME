@@ -1,0 +1,56 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsPixmapItem>
+#include <QFileDialog>
+#include <QGraphicsGridLayout>
+#include <QGraphicsLineItem>
+#include <QLineF>
+#include <QTextStream>
+#include <QLineEdit>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QSpinBox>
+
+#include<iostream>
+
+
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+
+//    QPen pen;
+//    pen.setStyle(Qt::DashLine);
+//    pen.setCapStyle(Qt::RoundCap);
+//    pen.setColor(Qt::red);
+//    pen.setWidth(5);
+//    qreal space = 5;
+//    pen.setDashOffset(space);
+
+}
+
+MainWindow* MainWindow::mainInstance = 0;
+
+MainWindow* MainWindow::GetInstance(QWidget *parent)
+{
+    if(mainInstance == NULL)
+        mainInstance = new MainWindow(parent);
+
+    return mainInstance;
+}
+
+QGraphicsView* MainWindow::GetInstanceGraphicsView()
+{
+    return ui->graphicsView;
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+

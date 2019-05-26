@@ -1,0 +1,19 @@
+#ifndef MAP_H
+#define MAP_H
+#include "cell.h"
+#include <QGraphicsScene>
+
+class Map//Класс карты
+{
+public:
+    int coint_in_width;//Количество клеток в ширину
+    int count_in_height;//Количество клеток в высоту
+
+    QList <Cell> list_cells;//Список всех клеток
+
+    QGraphicsScene *scene = new QGraphicsScene;//Главная сцена
+
+    void drow_map();//функция рисования карты
+};
+
+#endif // MAP_H

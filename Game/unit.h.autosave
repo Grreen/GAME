@@ -1,0 +1,24 @@
+#ifndef UNIT_H
+#define UNIT_H
+#include <QPixmap>
+#include <QString>
+
+#include <drow.h>
+#include <move.h>
+
+class Unit : public Drow, public Move
+{
+    int x,y;//Координаты юнита
+    float health;//Здоровье юнита
+    float demage;//Урон юнита
+    int count_steps;//Количество клеток за ход
+
+    QPixmap image;//Картинка юнита
+    QString type;//Тип юнита (ближний или дальний)
+
+    bool live = true;//Жив ли юнит
+    
+    void attack();//Функция атаки юнита
+};
+
+#endif // UNIT_H

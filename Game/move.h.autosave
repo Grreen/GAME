@@ -1,0 +1,11 @@
+#ifndef MOVE_H
+#define MOVE_H
+#include <QPoint>
+
+class Move//Класс перемещения
+{
+    void next_cell(QPoint first_coord, QPoint second_coord);//Переходим из одной клетки в другую
+    void drow_way(QPoint first_coord, QPoint second_coord);//Отрисовка пути по клеткам
+};
+
+#endif // MOVE_H
