@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    buy_units.cpp \
         main.cpp \
         mainwindow.cpp \
     move.cpp \
@@ -33,9 +34,12 @@ SOURCES += \
     map.cpp \
     cell.cpp \
     castle.cpp \
-    drow.cpp
+    drow.cpp \
+    mygraphicsscene.cpp \
+    game.cpp
 
 HEADERS += \
+    buy_units.h \
         mainwindow.h \
     move.h \
     player.h \
@@ -43,7 +47,9 @@ HEADERS += \
     map.h \
     cell.h \
     castle.h \
-    drow.h
+    drow.h \
+    mygraphicsscene.h \
+    game.h
 
 FORMS += \
         mainwindow.ui

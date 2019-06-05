@@ -1,18 +1,26 @@
 #ifndef CASTLE_H
 #define CASTLE_H
 #include <QPixmap>
+#include <QPoint>
+#include <QGraphicsObject>
 
-#include "drow.h"
+#include "mygraphicsscene.h"
 
-class Castle : public Drow
+class Castle : public QGraphicsObject
 {
-    int x_min, x_max;
-    int y_min, y_max;
-    float health;
-    QPixmap image;
+//    Q_OBJECT
+public:
+    int health;//Здоровье замка
+    int max_health;
 
+    explicit Castle(MyGraphicsScene *scene,QPoint coord_castle, QString id_image,QObject *parent = 0);
+    void hit(int demage);
 
-    void drow_castle();
+private:
+    QPoint spawnPos;
+    QString image_id;//изображение замкa
+    QRectF boundingRect() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 };
 
 #endif // CASTLE_H

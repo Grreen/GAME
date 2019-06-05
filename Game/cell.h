@@ -3,16 +3,16 @@
 #include <QPixmap>
 #include <QGraphicsScene>
 
-#include "drow.h";
+#include <QGraphicsItem>
+#include <iostream>
 
-class Cell : public Drow
+#include "drow.h"
+
+class Cell : public Drow//Класс клетки
 {
 public:
-    int x_center;
-    int y_center;
-    int width;
-
-//    QPixmap image;
+    int x_center, y_center;//Координаты центра клетки
+    int width;//Ширина клетки
 
     bool enemy = false;//Есть ли противник в клетке
 };

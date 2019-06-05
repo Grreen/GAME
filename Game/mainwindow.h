@@ -32,34 +32,23 @@ public:
     Ui::MainWindow *ui;
 
 
+private slots:
+    void on_pushButton_clicked();
 };
 
-class HBoxLayout : public QHBoxLayout
-{
-public:
-    QLabel label;
-    QLineEdit name;
-};
 
 class New_Form : public QWidget
 {
     Q_OBJECT
 public:
-    int count_players = 2;
-    New_Form *win;
-    QList <QString> list_name_players;
-    QList <QPixmap> list_image_players;
-    QHBoxLayout *body_layout = new QHBoxLayout;
-    QVBoxLayout *first_layout = new QVBoxLayout;
-    QVBoxLayout *second_layout = new QVBoxLayout;
+    int count_players = 2;//количество игроков
+    QList <QString> list_name_players;//Имена всех игроков
 
-
-    void create_window(MainWindow *parent_window);
+    void create_window(MainWindow *parent_window);//Функция создания нового окна(ввод количества игроков и ввод имён)
 
 
 public slots:
-    void spinboxValueChanged(int value){count_players = value;}
-    void create_line();
+    void spinboxValueChanged(int value){count_players = value;}//Слот передающий значения в переменную класс при изменении значения в QSpinBox
 
 
 };
