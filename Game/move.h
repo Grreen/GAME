@@ -11,7 +11,7 @@ class Move//Класс перемещения
 {
 public:
 //    QList <QPoint> list_point; почему то, если его использлвать то крашится прога
-    bool next_cell(MyGraphicsScene*scene,QPoint first_coord, QPoint second_coord, int width_map, int height_map, int **array, int count_steps);//Переходим из одной клетки в другую
+    bool next_cell(MyGraphicsScene*scene,QPoint first_coord, QPoint second_coord, int width_map, int height_map/*, int **array*/, int count_steps);//Переходим из одной клетки в другую
     void movement(MyGraphicsScene *scene, int count_steps, QString type_movement = "move");
     void movement_attack(MyGraphicsScene *scene, int count_steps);
     int steps;

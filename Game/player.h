@@ -21,7 +21,7 @@ public:
     bool live = true; //Жив ли игрок
     bool move = false; //Ход этого ли игрока
 
-    void addUnit(int x, int y, QString id_unit, MyGraphicsScene *scene, int **array);
+    void addUnit(int x, int y, QString id_unit, MyGraphicsScene *scene);
 };
 
 #endif // PLAYER_H

@@ -25,7 +25,6 @@ void Map::drow_map()
     GraphicsView->setScene(scene);
     GraphicsView->setAlignment( Qt::AlignLeft | Qt::AlignTop );
 
-//15 в длину
     scene->size_items = GraphicsView->width()/13;
     QFile file("Map.txt");
     file.open(QIODevice::ReadOnly);

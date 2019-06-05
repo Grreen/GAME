@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
     game->addPlayer("First", "01", 1);
     game->list_players[0]->move = true;
     game->addPlayer("Second", "01", 2);
-    game->list_players[0]->addUnit(game->map.scene->size_items+50,game->map.scene->size_items+50,"10", game->map.scene, game->map.map);
-    game->list_players[1]->addUnit(game->map.scene->size_items*2+50,game->map.scene->size_items*2+50,"10", game->map.scene, game->map.map);
+    game->list_players[0]->addUnit(game->map.scene->size_items+50,game->map.scene->size_items+50,"10", game->map.scene);
+    game->list_players[1]->addUnit(game->map.scene->size_items*2+50,game->map.scene->size_items*2+50,"10", game->map.scene);
 
 //    game.list_players[0].list_units[0]->next_cell(game.map.scene,QPoint(0,0), QPoint(0,0), 10,10,game.map.map);
 //    game.list_players[0].list_units[0]->attack(300);

@@ -26,6 +26,9 @@ Unit::Unit(QPoint point,QGraphicsScene *scene, QString id_unit,QObject *parent):
 //    this->setActive(false);
 //    this->setFlag(QGraphicsItem::ItemIsSelectable, true);
     this->setPos(coord);
+
+    Game *game = Game::GetInstance();
+    game->map.map[coord.y()/game->map.scene->size_items][coord.x()/game->map.scene->size_items] = -3;
 }
 
 QRectF Unit::boundingRect() const
@@ -54,13 +57,29 @@ void Unit::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
 }
 
-void Unit::hit(int at_demage)
+void Unit::hit()
 {
-    health-=at_demage;
     Game *game = Game::GetInstance();
-    this->update(0,0,game->map.scene->size_items,game->map.scene->size_items);
+    int index_player, index_attack_unit;
+    for (int i=0;i<game->list_players.length();i++)
+    {
+        if(game->list_players[i]->move)
+        {
+            index_player = i;
+            break;
+        }
+    }
+    for (int i=0;i<game->list_players[index_player]->list_units.length();i++)
+    {
+        if(game->list_players[index_player]->list_units[i]->choose_unit)
+        {
+            index_attack_unit = i;
+            break;
+        }
+    }
+    health-=game->list_players[index_player]->list_units[index_attack_unit]->demage;
     if(health<=0)
         delete  this;
-
+    this->update(0,0,game->map.scene->size_items, game->map.scene->size_items);
 }
 

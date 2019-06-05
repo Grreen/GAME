@@ -53,7 +53,7 @@ void Buy_units::buy_melle_first()
 {
     Game *game = Game::GetInstance();
 
-    game->list_players[0]->addUnit(game->map.scene->size_items-100,game->map.scene->size_items+50,"10",game->map.scene, game->map.map);
+    game->list_players[0]->addUnit(game->map.scene->size_items-100,game->map.scene->size_items+50,"10",game->map.scene);
     MainWindow *win = MainWindow::GetInstance();
     win->setEnabled(true);
 }

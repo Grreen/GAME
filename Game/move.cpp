@@ -12,10 +12,12 @@
 #include <QThread>
 
 #include "unit.h"
+#include "game.h"
 
-bool Move::next_cell(MyGraphicsScene *scene, QPoint first_coord, QPoint second_coord,const int width_map, const int height_map, int **array, int count_steps)
+bool Move::next_cell(MyGraphicsScene *scene, QPoint first_coord, QPoint second_coord,const int width_map, const int height_map/*, int **array*/, int count_steps)
 {
-    if(!array) return false;
+    Game *game = Game::GetInstance();
+    if(!game->map.map) return false;
     int ax = first_coord.x()/scene->size_items, ay = first_coord.y()/scene->size_items,
         bx = second_coord.x()/scene->size_items, by = second_coord.y()/scene->size_items;
 //    int ax = 1, ay = 1 , bx = 1, by = 5;
@@ -23,6 +25,7 @@ bool Move::next_cell(MyGraphicsScene *scene, QPoint first_coord, QPoint second_c
     const int H = height_map;//высота поля
     const int WALL = -1;
     const int BLANK = -2;
+    const int ENEMY = -3;
 
     int px[W*H],py[W*H];//координаты ячеек, входящих в путь
     for (int j=0;j<W*H;j++) {
@@ -37,8 +40,10 @@ bool Move::next_cell(MyGraphicsScene *scene, QPoint first_coord, QPoint second_c
 
     for(int i=0;i<width_map;i++)
         for(int j=0;j<height_map;j++)
-            grid[i][j] = array[i][j];
+            grid[i][j] = game->map.map[i][j];
 
+    if(grid[by][bx] == ENEMY)
+        grid[by][bx]=BLANK;
     int dx[4] = {1, 0, -1, 0};   // смещения, соответствующие соседям ячейки
     int dy[4] = {0, 1, 0, -1};   // справа, снизу, слева и сверху
     int d, x, y, k;
@@ -59,7 +64,7 @@ bool Move::next_cell(MyGraphicsScene *scene, QPoint first_coord, QPoint second_c
           {
              int iy=y + dy[k], ix = x + dx[k];
              if ( iy >= 0 && iy < H && ix >= 0 && ix < W &&
-                  grid[iy][ix] == BLANK )
+                  grid[iy][ix] == BLANK)
              {
                 stop = false;              // найдены непомеченные клетки
                 grid[iy][ix] = d + 1;      // распространяем волну
@@ -67,7 +72,7 @@ bool Move::next_cell(MyGraphicsScene *scene, QPoint first_coord, QPoint second_c
           }
         }
     d++;
-    } while ( !stop && grid[by][bx] == BLANK );
+    } while ( !stop && grid[by][bx] == BLANK);
 
     if (grid[by][bx] == BLANK) return false;  // путь не найден
 
@@ -167,7 +172,7 @@ void Move::movement(MyGraphicsScene *scene, int count_steps, QString type_move)
     if(steps<=count_steps)
         max_steps = steps;
 
-    if(type_move == "attack" && count_steps>steps)
+    if((type_move == "attack" || type_move == "ally") && count_steps>=steps)
         max_steps--;
 
     if(way_x!=nullptr && way_y != nullptr)
@@ -177,7 +182,12 @@ void Move::movement(MyGraphicsScene *scene, int count_steps, QString type_move)
         QGraphicsItemAnimation *animation = new QGraphicsItemAnimation(timer);
         Unit *unit = dynamic_cast<Unit*>(scene->itemAt(way_x[0]*scene->size_items, way_y[0]*scene->size_items,QTransform()));
         std::cout<<way_x[0]*scene->size_items<<"  | "<<way_y[0]*scene->size_items<<std::endl;
-        unit->count_steps-=max_steps;
+        if(type_move == "move")
+            unit->count_steps-=max_steps;
+        else if(type_move == "ally")
+            unit->count_steps-=max_steps-1;
+        else
+            unit->count_steps = 0;
     //    Unit *unit = dynamic_cast<Unit*>(scene->itemAt(100,100,QTransform()));
         animation->setItem(unit);
         animation->setTimeLine(timer);
@@ -197,10 +207,12 @@ void Move::movement(MyGraphicsScene *scene, int count_steps, QString type_move)
         if(type_move=="attack")
         {
             Unit *attack_unit = dynamic_cast<Unit*>(scene->itemAt(way_x[max_steps]*scene->size_items, way_y[max_steps]*scene->size_items,QTransform()));
-            tim->singleShot(850*max_steps+10,attack_unit, SLOT(hit_2(100)));
-//            attack_unit->hit(100);
+            tim->singleShot(850*max_steps+10,attack_unit,SLOT(hit()));
         }
         timer->start();
+        Game *game = Game::GetInstance();
+        game->map.map[way_y[0]][way_x[0]] = -2;
+        game->map.map[way_y[max_steps-1]][way_x[max_steps-1]] = -3;
         way_x = way_y =nullptr;
     }
 }

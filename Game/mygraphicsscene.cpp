@@ -77,7 +77,7 @@ void MyGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                     this->way_drow = false;
                 }
                 unit->next_cell(this,QPoint(coord_first.x(),coord_first.y()), QPoint(coord_second.x(),coord_second.y()),
-                                game->map.width,game->map.height, unit->array_map, unit->count_steps);
+                                game->map.width,game->map.height, unit->count_steps);
             }
         }
     }
@@ -95,7 +95,20 @@ void MyGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent
         {
             Game *game = Game::GetInstance();
             Unit *attack_unit = dynamic_cast<Unit*>(this->itemAt(mouseEvent->scenePos(), QTransform()));
-            if (attack_unit)
+            int index_player;
+            for (int i=0;i<game->list_players.length();i++)
+            {
+                if(game->list_players[i]->move)
+                {
+                    index_player = i;
+                    break;
+                }
+            }
+            if(game->list_players[index_player]->list_units.indexOf(attack_unit)>=0)
+            {
+                unit->movement(this, unit->count_steps, "ally");
+            }
+            else if (attack_unit)
             {
                 unit->movement(this, unit->count_steps, "attack");
             }
@@ -129,30 +142,23 @@ bool MyGraphicsScene::chooseUnit()
                 this->line_group.clear();
                 this->way_drow = false;
             }
-            int index_player;
-            for (int i=0;i<game->list_players.length();i++)
-                if(game->list_players[i]->move)
-                    index_player = i;
+
             QGraphicsDropShadowEffect *bodyShadow = new QGraphicsDropShadowEffect;
             bodyShadow->setBlurRadius(9.0);
             bodyShadow->setColor(QColor(0, 0, 0, 160));
             bodyShadow->setOffset(4.0);
-            for (int i=0; i<game->list_players[index_player]->list_units.length();i++)
-                if(game->list_players[index_player]->list_units[i]->graphicsEffect())
-                {
-                    delete game->list_players[index_player]->list_units[i]->graphicsEffect();
-                    game->list_players[index_player]->list_units[i]->setGraphicsEffect(bodyShadow);
-                }
-//            Unit *old_unit = dynamic_cast<Unit*>(unit_inst);
-//            delete old_unit->graphicsEffect();
 
+            Unit *old_unit = dynamic_cast<Unit*>(unit_inst);
+            old_unit->choose_unit = false;
+            delete old_unit->graphicsEffect();
+            old_unit->setGraphicsEffect(bodyShadow);
         }
         QGraphicsDropShadowEffect *bodyShadow = new QGraphicsDropShadowEffect;
         bodyShadow->setBlurRadius(10.0);
         bodyShadow->setColor(Qt::yellow);
         bodyShadow->setOffset(0.0);
         unit->setGraphicsEffect(bodyShadow);
-//        unit->choose = true;
+        unit->choose_unit = true;
         unit_inst = unit;
         return true;
     }

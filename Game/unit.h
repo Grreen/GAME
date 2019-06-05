@@ -22,18 +22,18 @@ public:
     QPixmap image;//Картинка юнита
     QString type;//Тип юнита (ближний или дальний)
 
-    int **array_map;
+    bool choose_unit;//выбран ли юнит
 
     explicit Unit(QPoint point,QGraphicsScene *scene, QString id_unit,QObject *parent = 0);
 
-    void hit(int at_demage);//Функция атаки юнита
+//    void hit(int at_demage);//Функция атаки юнита
 
 private:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 public slots:
-    void hit_2(int dem){health-=dem;}
+    void hit();
 
 };
 
