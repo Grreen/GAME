@@ -8,15 +8,20 @@
 Castle::Castle(MyGraphicsScene *scene, QPoint coord_castle, QString id_image,QObject *parent):
      QGraphicsObject ()
 {
-    spawnPos = coord_castle;
+    coord = coord_castle;
     health = max_health = 1000;
     image_id = id_image;
+    size_object = scene->size_items;
+
+    Game *game = Game::GetInstance();
+    game->map.map[coord.x()/size_object][coord.y()/size_object] = -3;
 
     QGraphicsDropShadowEffect *bodyShadow = new QGraphicsDropShadowEffect;
     bodyShadow->setBlurRadius(9.0);
     bodyShadow->setColor(QColor(0, 0, 0, 160));
     bodyShadow->setOffset(4.0);
     this->setGraphicsEffect(bodyShadow);
+    this->setZValue(2);
 
     scene->addItem(this);
     this->setEnabled(false);
@@ -25,24 +30,72 @@ Castle::Castle(MyGraphicsScene *scene, QPoint coord_castle, QString id_image,QOb
 
 QRectF Castle::boundingRect() const
 {
-    Game *game = Game::GetInstance();
-    return QRectF(0,0,game->map.scene->size_items,game->map.scene->size_items);
+    return QRectF(0,0,size_object,size_object);
 }
 
 void Castle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Game *game = Game::GetInstance();
-    QPixmap pixmap = QPixmap(image_id+".png").scaled(game->map.scene->size_items,game->map.scene->size_items);
+    QPixmap pixmap = QPixmap("../Game/"+image_id+".png").scaled(size_object,size_object);
     painter->drawPixmap(0,0,pixmap);
     painter->setPen(Qt::NoPen);
     painter->setBrush(Qt::green);
-    painter->drawRect(10,0,((game->map.scene->size_items-20)*health/max_health), 5);
+    for (int i=0;i<game->list_players.length();i++)
+    {
+        if(game->list_players[i]->castle == this)
+            if(game->list_players[i]->move)
+                painter->setBrush(Qt::green);
+            else
+                painter->setBrush(Qt::red);
+    }
+    painter->drawRect(0,0,(size_object*health/max_health), 5);
+
+    painter->setPen(Qt::black);
+    painter->setBrush(Qt::NoBrush);
+    painter->drawRect(0,0,size_object, 5);
+
+    int count_line = max_health/60;
+    for (float i=size_object/count_line;i<size_object-(size_object/count_line);i+=size_object/count_line)
+    {
+        painter->drawLine(i,0,i,5);
+    }
+}
+void Castle::hit()
+{
+    Game *game = Game::GetInstance();
+    int index_player, index_attack_unit;
+    for (int i=0;i<game->list_players.length();i++)
+    {
+        if(game->list_players[i]->move)
+        {
+            index_player = i;
+            break;
+        }
+    }
+    for (int i=0;i<game->list_players[index_player]->list_units.length();i++)
+    {
+        if(game->list_players[index_player]->list_units[i]->choose_unit)
+        {
+            index_attack_unit = i;
+            break;
+        }
+    }
+    health-=game->list_players[index_player]->list_units[index_attack_unit]->demage;
+    if(health<=0)
+    {
+        for (int i=0;i<game->list_players.length();i++)
+            if(game->list_players[i]->castle == this)
+            {
+                delete this;
+                game->list_players[i]->castle = 0;
+                break;
+            }
+    }
+    else
+        this->update(0,0,size_object,size_object);
 }
 
-void Castle::hit(int demage)
+void Castle::resize(int size)
 {
-    health-=demage;
-    this->update(0,0,100,100);
-    if(health<=0)
-        delete  this;
+    size_object = size;
 }

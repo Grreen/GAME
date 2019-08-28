@@ -4,15 +4,18 @@
 #include <QPoint>
 #include <QGraphicsLineItem>
 #include <QGraphicsDropShadowEffect>
+#include <QScrollBar>
 
 #include <QList>
 #include <QGraphicsItemAnimation>
 #include <QTimeLine>
 #include <QTimer>
 #include <QThread>
+#include <QSignalMapper>
 
 #include "unit.h"
 #include "game.h"
+#include "graphicsellipseitem.h"
 
 bool Move::next_cell(MyGraphicsScene *scene, QPoint first_coord, QPoint second_coord,const int width_map, const int height_map/*, int **array*/, int count_steps)
 {
@@ -33,14 +36,15 @@ bool Move::next_cell(MyGraphicsScene *scene, QPoint first_coord, QPoint second_c
     }
     int len;//длина пути
     int grid[width_map][height_map];
-//    int **grid;
-//    grid = new int*[width_map];
-//    for (int i=0;i<width_map;i++)
-//        grid[i] = new int[height_map];
 
     for(int i=0;i<width_map;i++)
         for(int j=0;j<height_map;j++)
-            grid[i][j] = game->map.map[i][j];
+            grid[i][j] = game->map.map[j][i];
+
+    grid[0][0] = ENEMY;
+    grid[0][width_map-1] = ENEMY;
+    grid[width_map-1][0] = ENEMY;
+    grid[width_map-1][width_map-1] = ENEMY;
 
     if(grid[by][bx] == ENEMY)
         grid[by][bx]=BLANK;
@@ -101,9 +105,6 @@ bool Move::next_cell(MyGraphicsScene *scene, QPoint first_coord, QPoint second_c
     px[0] = ax;
     py[0] = ay;                    // теперь px[0..len] и py[0..len] - координаты ячеек пути
 
-//    way_x = px;
-//    way_y = py;
-
     way_x = new int[len];
     way_y = new int[len];
     for (int i=0;i<len;i++)
@@ -133,15 +134,22 @@ void Move::draw_way(MyGraphicsScene *scene, int length, int *coord_x, int *coord
     {
         if(count_steps<=0)
             pen.setColor(Qt::red);
+
         QGraphicsDropShadowEffect *bodyShadow = new QGraphicsDropShadowEffect;
         bodyShadow->setBlurRadius(9.0);
         bodyShadow->setColor(QColor(0, 0, 0, 160));
-        bodyShadow->setOffset(4.0);
+        bodyShadow->setYOffset(-2.0);
+        bodyShadow->setXOffset(5.0);
 
         QGraphicsLineItem *line = scene->addLine(coord_x[i]*scene->size_items+scene->size_items/2,
                                                  coord_y[i]*scene->size_items+scene->size_items/2,
                                                  coord_x[i+1]*scene->size_items+scene->size_items/2,
                                                  coord_y[i+1]*scene->size_items+scene->size_items/2, pen);
+
+        line->setGraphicsEffect(bodyShadow);
+        line->setActive(false);
+        scene->line_group.append(line);
+
         if(i==length-2)
         {
             QPen ellips_pen;
@@ -150,79 +158,94 @@ void Move::draw_way(MyGraphicsScene *scene, int length, int *coord_x, int *coord
             else
                 ellips_pen.setColor(Qt::red);
             ellips_pen.setWidth(5);
-            QGraphicsEllipseItem *ellips = scene->addEllipse(coord_x[i+1]*scene->size_items+scene->size_items/2,
-                                                             coord_y[i+1]*scene->size_items+scene->size_items/2,
-                                                             12,12, ellips_pen, Qt::red);
+
+            QGraphicsEllipseItem *ellips = scene->addEllipse(coord_x[i+1]*scene->size_items+scene->size_items/2-scene->size_items/16,
+                                                             coord_y[i+1]*scene->size_items+scene->size_items/2-scene->size_items/16,
+                                                             scene->size_items/8,scene->size_items/8, ellips_pen, Qt::red);
+
+            QGraphicsDropShadowEffect *bodyShadow = new QGraphicsDropShadowEffect;
+            bodyShadow->setBlurRadius(9.0);
+            bodyShadow->setColor(QColor(0, 0, 0, 160));
+            bodyShadow->setYOffset(-2.0);
+            bodyShadow->setXOffset(5.0);
+
             ellips->setGraphicsEffect(bodyShadow);
+            ellips->setActive(false);
             scene->line_group.append(ellips);
-//            scene->group_line->addToGroup(ellips);
         }
-        line->setGraphicsEffect(bodyShadow);
-        scene->line_group.append(line);
-//        scene->group_line->addToGroup(line);
         count_steps--;
     }
 }
 
 void Move::movement(MyGraphicsScene *scene, int count_steps, QString type_move)
 {
-    int max_steps;
-
-    max_steps = count_steps+1;
+    int max_steps= count_steps+1;
     if(steps<=count_steps)
         max_steps = steps;
 
-    if((type_move == "attack" || type_move == "ally") && count_steps>=steps)
+    if((type_move == "attack unit" || type_move == "ally" || type_move == "attack castle") && count_steps>=steps)
         max_steps--;
 
-    if(way_x!=nullptr && way_y != nullptr)
+    if(way_x && way_y)
     {
-        QTimeLine *timer = new QTimeLine(1100*max_steps);
+        int _time = 600;
+        QTimeLine *timer = new QTimeLine(_time*max_steps);
         timer->setCurveShape(QTimeLine::LinearCurve);
         QGraphicsItemAnimation *animation = new QGraphicsItemAnimation(timer);
+
         Unit *unit = dynamic_cast<Unit*>(scene->itemAt(way_x[0]*scene->size_items, way_y[0]*scene->size_items,QTransform()));
-        std::cout<<way_x[0]*scene->size_items<<"  | "<<way_y[0]*scene->size_items<<std::endl;
-        if(type_move == "move")
-            unit->count_steps-=max_steps;
-        else if(type_move == "ally")
+
+        if(type_move == "move" || type_move == "ally")
             unit->count_steps-=max_steps-1;
         else
             unit->count_steps = 0;
-    //    Unit *unit = dynamic_cast<Unit*>(scene->itemAt(100,100,QTransform()));
+
         animation->setItem(unit);
         animation->setTimeLine(timer);
+
+        Game *game = Game::GetInstance();
 
         QTimer *tim = new QTimer;
         for (int i = 0; i < max_steps; ++i)
         {
-            animation->setPosAt(i/ float(max_steps+1), QPointF(way_x[i]*scene->size_items, way_y[i]*scene->size_items));
+            animation->setPosAt(((float)i/(float)(max_steps)), QPointF(way_x[i]*scene->size_items, way_y[i]*scene->size_items));
             unit->coord = QPoint(way_x[i]*scene->size_items, way_y[i]*scene->size_items);
             scene->coord_first = unit->coord;
+
+            GraphicsView *graphics_view = game->graphicsView;
             if(i<max_steps-1)
-                tim->singleShot((i+1)*950,scene, SLOT(delete_first_line()));
+            {
+                tim->singleShot((i+1)*(_time),scene, SLOT(delete_first_line()));
+
+                int x1 = way_x[i]*game->map.scene->size_items;
+                int y1 = way_y[i]*game->map.scene->size_items;
+                int x2 = way_x[i+1]*game->map.scene->size_items;
+                int y2 = way_y[i+1]*game->map.scene->size_items;
+                   tim->singleShot((i)*(_time),[tim,_time,x1,x2,y1,y2,graphics_view]()
+                {graphics_view->move_scrollBar(tim,_time,QPoint(x1,y1),QPoint(x2,y2));});
+
+            }
         }
-        tim->singleShot(850*max_steps, scene, SLOT(delete_all_line()));
-        tim->singleShot(850*max_steps+10,scene, SLOT(enable_scene()));
-        tim->singleShot(850*max_steps+10,tim, SLOT(stop()));
-        if(type_move=="attack")
+        game->graphicsScene->refresh_data(unit);
+
+        tim->singleShot(0,game, SLOT(disenable_window()));
+        tim->singleShot(_time*(max_steps), scene, SLOT(delete_all_line()));
+        tim->singleShot(_time*(max_steps),game, SLOT(enable_window()));
+        tim->singleShot(_time*(max_steps),tim, SLOT(stop()));
+        if(type_move == "attack unit")
         {
             Unit *attack_unit = dynamic_cast<Unit*>(scene->itemAt(way_x[max_steps]*scene->size_items, way_y[max_steps]*scene->size_items,QTransform()));
-            tim->singleShot(850*max_steps+10,attack_unit,SLOT(hit()));
+            tim->singleShot(_time*max_steps,attack_unit,SLOT(hit()));
+        }
+        else if(type_move == "attack castle")
+        {
+            Castle *attack_castle = dynamic_cast<Castle*>(scene->itemAt(way_x[max_steps]*scene->size_items, way_y[max_steps]*scene->size_items,QTransform()));
+            tim->singleShot(_time*max_steps,attack_castle,SLOT(hit()));
         }
         timer->start();
-        Game *game = Game::GetInstance();
-        game->map.map[way_y[0]][way_x[0]] = -2;
-        game->map.map[way_y[max_steps-1]][way_x[max_steps-1]] = -3;
-        way_x = way_y =nullptr;
-    }
-}
 
-void Move::movement_attack(MyGraphicsScene *scene, int count_steps)
-{
-    if(count_steps>steps)
-    {
-        movement(scene, steps-2);
+        game->map.map[way_x[0]][way_y[0]] = -2;
+        game->map.map[way_x[max_steps-1]][way_y[max_steps-1]] = -3;
+        way_x = way_y =0;
     }
-    else
-        movement(scene, count_steps);
 }

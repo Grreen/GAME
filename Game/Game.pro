@@ -26,13 +26,17 @@ CONFIG += c++11
 
 SOURCES += \
     buy_units.cpp \
+    choose_count_players.cpp \
+    datagraphicsscene.cpp \
+    graphicspanel.cpp \
+    graphicsview.cpp \
         main.cpp \
         mainwindow.cpp \
+    minimap.cpp \
     move.cpp \
     player.cpp \
     unit.cpp \
     map.cpp \
-    cell.cpp \
     castle.cpp \
     drow.cpp \
     mygraphicsscene.cpp \
@@ -40,16 +44,20 @@ SOURCES += \
 
 HEADERS += \
     buy_units.h \
+    datagraphicsscene.h \
+    choose_count_players.h \
+    graphicsview.h \
+    game.h \
+    graphicspanel.h \
+    castle.h \
         mainwindow.h \
+    minimap.h \
     move.h \
     player.h \
     unit.h \
     map.h \
-    cell.h \
-    castle.h \
     drow.h \
-    mygraphicsscene.h \
-    game.h
+    mygraphicsscene.h
 
 FORMS += \
         mainwindow.ui

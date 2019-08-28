@@ -14,23 +14,50 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
+   <widget class="QGraphicsView" name="graphicsView_2">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>490</y>
+      <width>141</width>
+      <height>141</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>830</x>
+      <y>561</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>PushButton 1</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_2">
+    <property name="geometry">
+     <rect>
+      <x>741</x>
+      <y>561</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>PushButton 2</string>
+    </property>
+   </widget>
    <widget class="QGraphicsView" name="graphicsView">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>1001</width>
-      <height>551</height>
+      <x>280</x>
+      <y>460</y>
+      <width>256</width>
+      <height>192</height>
      </rect>
-    </property>
-    <property name="interactive">
-     <bool>true</bool>
-    </property>
-    <property name="dragMode">
-     <enum>QGraphicsView::NoDrag</enum>
-    </property>
-    <property name="transformationAnchor">
-     <enum>QGraphicsView::NoAnchor</enum>
     </property>
    </widget>
   </widget>

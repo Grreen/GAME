@@ -2,11 +2,11 @@
 #include <QApplication>
 #include <QGraphicsScene>
 
-//#include "player.h"
-//#include "map.h"
-//#include "unit.h"
 #include "mygraphicsscene.h"
 #include "game.h"
+#include "choose_count_players.h"
+#include "graphicspanel.h"
+#include "datagraphicsscene.h"
 
 
 
@@ -16,47 +16,41 @@ int main(int argc, char *argv[])
 
     MainWindow *w = MainWindow::GetInstance();
     w->showFullScreen();
-    QGraphicsView *view = w->GetInstanceGraphicsView();
-    view->setMinimumSize(QSize(w->width()-200,w->height()-100));
-//    w->show();
+
+    QGraphicsView *view_1 = w->GetInstanceGraphicsView(1);
+    view_1->setGeometry(200,w->height()-200,w->width()-500, 200);
+    view_1->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view_1->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    DataGraphicsScene *new_scene = new DataGraphicsScene(w);
+    view_1->setScene(new_scene);
+    new_scene->setSceneRect(view_1->rect());
+
+    QGraphicsView *view_2 = w->GetInstanceGraphicsView(2);
+    view_2->setGeometry(0,w->height()-200, 200, 201);
+    QPushButton *button_1 = w->GetInstanceButton(1);
+    button_1->setGeometry(w->width()-300,0,300,50);
+    button_1->setText("ВЫЙТИ");
+    QPushButton *button_2 = w->GetInstanceButton(2);
+    button_2->setGeometry(w->width()-300,button_1->height(),300,50);
+    button_2->setText("ХОД СЛЕДУЮЩЕГО ИГРОКА");
+
 
     Game *game = Game::GetInstance();
-    game->game_play = true;
+    game->game_play = true;//перенести все остальное в инициализацию Game
     game->map.scene = new MyGraphicsScene;
     game->map.scene->scene = game->map.scene;
     game->map.drow_map();
 
+    Game::connect(button_2, SIGNAL(clicked()), game, SLOT(next_player()));
 
-    game->addPlayer("First", "01", 1);
-    game->list_players[0]->move = true;
-    game->addPlayer("Second", "01", 2);
-    game->list_players[0]->addUnit(game->map.scene->size_items+50,game->map.scene->size_items+50,"10", game->map.scene);
-    game->list_players[1]->addUnit(game->map.scene->size_items*2+50,game->map.scene->size_items*2+50,"10", game->map.scene);
+    Choose_count_players *wind = new Choose_count_players(w);
 
-//    game.list_players[0].list_units[0]->next_cell(game.map.scene,QPoint(0,0), QPoint(0,0), 10,10,game.map.map);
-//    game.list_players[0].list_units[0]->attack(300);
-//    game.list_players[0].list_units.removeAt(0);
-//    std::cout<<game.list_players[0].list_units[0]->health<<std::endl;
+//    game->addPlayer("First", "01", 1);
+//    game->addPlayer("Second", "01", 2);
+//    game->addPlayer("Third", "01", 3);
+//    game->addPlayer("Fourth", "01", 4);
 
-//    QList <Player> players;
-//    for (int i=0;i<2;i++) {
-//        Player player;
-//        players.append(player);
-//    }
 
-//    players[0].move = true;
-//    int choose,choose_unit = 0;
-
-//    while(game_play)
-//    {
-//        while(players[choose].move)
-//        {
-//            while(players[choose].list_units[choose_unit].move)
-//            {
-
-//            }
-//        }
-//    }
 
 
     return a.exec();

@@ -18,135 +18,138 @@
 #include "mainwindow.h"
 #include "buy_units.h"
 #include "game.h"
+#include "datagraphicsscene.h"
 
 
 
 void MyGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton)
+    Game *game = Game::GetInstance();
+    if(game->game_play)
     {
-        coord_first = event->scenePos();
-        if(!chooseUnit())
+        if (event->button() == Qt::LeftButton)
         {
-            if(unit_inst)
+            coord_first = event->scenePos();
+            if(!chooseUnit())
             {
-                Unit *unit = dynamic_cast<Unit*>(unit_inst);
-                if(unit)
+                if(unit_inst)
                 {
-                    delete  unit->graphicsEffect();
                     QGraphicsDropShadowEffect *bodyShadow = new QGraphicsDropShadowEffect;
                     bodyShadow->setBlurRadius(9.0);
                     bodyShadow->setColor(QColor(0, 0, 0, 160));
-                    bodyShadow->setOffset(4.0);
-                    unit->setGraphicsEffect(bodyShadow);
+                    bodyShadow->setYOffset(-2.0);
+                    bodyShadow->setXOffset(5.0);
 
-//                    unit->choose = false;
-//                    if(this->group_line!=NULL)
-                    if(this->line_group.length()!=0)
-                    {
-//                        delete  this->group_line;
-                        for (int i=0;i<line_group.length();i++)
-                            delete this->line_group[i];
-                        this->line_group.clear();
-                    }
-//                    delete this->unit_inst;
-                    this->unit_inst = NULL;
-                    this->way_drow = false;
-                    this->update(0,0,this->width(),this->height());
+                    unit_inst->setGraphicsEffect(bodyShadow);
                 }
-            }
+                delete_unit_inst();
+                delete_way();
 
+                DataGraphicsScene *scene = dynamic_cast<DataGraphicsScene*>(MainWindow::GetInstance()->GetInstanceGraphicsView(1)->scene());
+                scene->refresh_scene(game->move_player());
+            }
         }
-    }
-    else if  (event->button() == Qt::RightButton && event->scenePos().x()>0 &&
-              event->scenePos().y() > 0 && event->scenePos().x() < this->width() && event->scenePos().y()<this->height())
-    {
-        coord_second = event->scenePos();
-        if(coord_second.x() < this->width() && coord_second.y() < this->height())
+        else if  (event->button() == Qt::RightButton && event->scenePos().x()>0 &&
+                  event->scenePos().y() > 0 && event->scenePos().x() < this->width() && event->scenePos().y()<this->height())
         {
-            Unit *new_unit = dynamic_cast<Unit*>(this->itemAt(coord_second,QTransform()));
-            Game *game = Game::GetInstance();
-            if(unit_inst!=NULL)
+            coord_second = event->scenePos();
+            if(coord_second.x() < this->width() && coord_second.y() < this->height())
             {
-                Unit *unit = dynamic_cast<Unit*>(unit_inst);
-                if(this->way_drow)
+                if(unit_inst)
                 {
-                    for (int i=0;i<line_group.length();i++)
-                        delete this->line_group[i];
-                    this->line_group.clear();
-                    this->way_drow = false;
+                    Unit *unit = dynamic_cast<Unit*>(unit_inst);
+
+                    delete_way();
+
+                    unit->next_cell(this,QPoint(coord_first.x(),coord_first.y()), QPoint(coord_second.x(),coord_second.y()),
+                                    game->map.width,game->map.height, unit->count_steps);
                 }
-                unit->next_cell(this,QPoint(coord_first.x(),coord_first.y()), QPoint(coord_second.x(),coord_second.y()),
-                                game->map.width,game->map.height, unit->count_steps);
             }
         }
     }
-    this->update(0,0,width(), height());
 }
 void MyGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    if(mouseEvent->button() == Qt::RightButton && this->way_drow)
+    Game *game = Game::GetInstance();
+    if(game->game_play)
     {
-        Unit *unit = dynamic_cast<Unit*>(unit_inst);
-        MainWindow *win = MainWindow::GetInstance();
-        QGraphicsView *viev = win->GetInstanceGraphicsView();
-        viev->setEnabled(false);
-        if(unit->count_steps>0)
+        if(mouseEvent->button() == Qt::RightButton && way_drow)
         {
-            Game *game = Game::GetInstance();
-            Unit *attack_unit = dynamic_cast<Unit*>(this->itemAt(mouseEvent->scenePos(), QTransform()));
-            int index_player;
-            for (int i=0;i<game->list_players.length();i++)
+            Unit *unit = dynamic_cast<Unit*>(unit_inst);
+            if(unit->count_steps>0)
             {
-                if(game->list_players[i]->move)
+                if(game->map.map[(int)mouseEvent->scenePos().x()/game->map.scene->size_items]
+                                [(int)mouseEvent->scenePos().y()/game->map.scene->size_items] != -3)
                 {
-                    index_player = i;
-                    break;
+                    unit->movement(game->map.scene, unit->count_steps);
                 }
+                else
+                {
+                    int index_player = index_move_player();
+
+                    Castle *attack_castle = dynamic_cast<Castle*>(game->map.scene->itemAt(mouseEvent->scenePos(), QTransform()));
+                    if(attack_castle)
+                    {
+                        if(game->list_players[index_player]->castle == attack_castle)
+                            unit->movement(game->map.scene, unit->count_steps, "ally");
+                        else
+                            unit->movement(game->map.scene, unit->count_steps, "attack castle");
+                        return;
+                    }
+                    Unit *attack_unit = dynamic_cast<Unit*>(game->map.scene->itemAt(mouseEvent->scenePos(), QTransform()));
+                    if(attack_unit && attack_unit!=unit)
+                    {
+                        if(game->list_players[index_player]->list_units.indexOf(attack_unit)>=0)
+                            unit->movement(game->map.scene, unit->count_steps, "ally");
+                        else
+                            unit->movement(game->map.scene, unit->count_steps, "attack unit");
+                        return;
+                    }
+                }
+
+
             }
-            if(game->list_players[index_player]->list_units.indexOf(attack_unit)>=0)
-            {
-                unit->movement(this, unit->count_steps, "ally");
-            }
-            else if (attack_unit)
-            {
-                unit->movement(this, unit->count_steps, "attack");
-            }
-            else
-                unit->movement(this, unit->count_steps);
         }
-        else
-            viev->setEnabled(true);
     }
 }
 
 bool MyGraphicsScene::chooseUnit()
 {
-    Unit *unit = dynamic_cast<Unit*>(scene->itemAt(coord_first,QTransform()));
     Game *game = Game::GetInstance();
+
+    if(game->map.map[(int)coord_first.x()/game->map.scene->size_items][(int)coord_first.y()/game->map.scene->size_items] != -3)
+        return false;
+
+    Unit *unit = dynamic_cast<Unit*>(scene->itemAt(coord_first,QTransform()));
+
     bool index = false;
+    int index_player;
     for (int i=0;i<game->list_players.length();i++)
     {
         if(game->list_players[i]->list_units.indexOf(unit)>=0)
+        {
+            index_player = i;
             if(game->list_players[i]->move)
+            {
                 index = true;
+                break;
+            }
+        }
     }
     if(unit && index)
     {
+        DataGraphicsScene *scene = dynamic_cast<DataGraphicsScene*>(MainWindow::GetInstance()->GetInstanceGraphicsView(1)->scene());
+        scene->refresh_scene(game->list_players[index_player]);
+
         if(unit!=unit_inst && unit_inst)
         {
-            if(this->way_drow)
-            {
-                for (int i=0;i<line_group.length();i++)
-                    delete this->line_group[i];
-                this->line_group.clear();
-                this->way_drow = false;
-            }
+            delete_way();
 
             QGraphicsDropShadowEffect *bodyShadow = new QGraphicsDropShadowEffect;
             bodyShadow->setBlurRadius(9.0);
             bodyShadow->setColor(QColor(0, 0, 0, 160));
-            bodyShadow->setOffset(4.0);
+            bodyShadow->setYOffset(-2.0);
+            bodyShadow->setXOffset(5.0);
 
             Unit *old_unit = dynamic_cast<Unit*>(unit_inst);
             old_unit->choose_unit = false;
@@ -165,30 +168,33 @@ bool MyGraphicsScene::chooseUnit()
     Castle *castle = dynamic_cast<Castle*>(scene->itemAt(coord_first, QTransform()));
     if(castle)
     {
-        chooseCastle(castle);
-        return true;
+        delete_way();
+
+        int index_player = index_move_player();
+
+        if(game->list_players[index_player]->castle == castle)
+        {
+            game->list_players[index_player]->refreshUnits();
+            DataGraphicsScene *scene = dynamic_cast<DataGraphicsScene*>(MainWindow::GetInstance()->GetInstanceGraphicsView(1)->scene());
+            scene->refresh_scene(game->move_player(),"castle");
+            chooseCastle();
+            return true;
+        }
+        else return false;
     }
     else return false;
 }
-bool MyGraphicsScene::chooseCastle(QGraphicsObject *castle)
+void MyGraphicsScene::chooseCastle()
 {
-    Castle *new_castle = static_cast<Castle*>(castle);
-    if(this->way_drow)
-    {
-        for (int i=0;i<line_group.length();i++)
-            delete this->line_group[i];
-        this->line_group.clear();
-        this->way_drow = false;
-    }
-
+    delete_unit_inst();
+    delete_way();
     Buy_units *nol = new Buy_units();
-
 }
 
 void MyGraphicsScene::delete_first_line()
 {
-    delete line_group[0];
-    line_group.removeAt(0);
+    delete line_group.first();
+    line_group.removeFirst();
 }
 
 void MyGraphicsScene::delete_all_line()
@@ -204,8 +210,48 @@ void MyGraphicsScene::delete_all_line()
 void MyGraphicsScene::enable_scene()
 {
     MainWindow *win = MainWindow::GetInstance();
-    QGraphicsView *viev = win->GetInstanceGraphicsView();
+    QGraphicsView *viev = win->GetInstanceGraphicsView(1);
     viev->setEnabled(true);
 }
 
+void MyGraphicsScene::delete_unit_inst()
+{
+    if(unit_inst)
+    {
+        Unit *old_unit = dynamic_cast<Unit*>(unit_inst);
+        old_unit->choose_unit = false;
 
+        QGraphicsDropShadowEffect *bodyShadow = new QGraphicsDropShadowEffect;
+        bodyShadow->setBlurRadius(9.0);
+        bodyShadow->setColor(QColor(0, 0, 0, 160));
+        bodyShadow->setYOffset(-2.0);
+        bodyShadow->setXOffset(5.0);
+
+        old_unit->setGraphicsEffect(bodyShadow);
+        unit_inst = 0;
+    }
+}
+
+void MyGraphicsScene::delete_way()
+{
+    if(this->way_drow)
+    {
+        for (int i=0;i<line_group.length();i++)
+            delete this->line_group[i];
+        this->line_group.clear();
+        this->way_drow = false;
+    }
+}
+
+int MyGraphicsScene::index_move_player()
+{
+    Game *game = Game::GetInstance();
+    for (int i=0;i<game->list_players.length();i++)
+        if(game->list_players[i]->move)
+            return  i;
+}
+
+QGraphicsObject* MyGraphicsScene::GetUnitInst()
+{
+    return unit_inst;
+}

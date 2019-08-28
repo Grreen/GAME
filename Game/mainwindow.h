@@ -14,45 +14,53 @@ namespace Ui {
 class MainWindow;
 }
 
+/**
+ * @brief Класс главного окна
+ * @details Отображает все элементы
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
+/**
+ * @brief Констуктор
+ * @details Создается главное окно,
+ * затем применяются стили к кнопкам:
+ * "Выход", "Ход следующего игрока"
+ * @param parent - родитель
+ */
     explicit MainWindow(QWidget *parent = nullptr);
+/**
+ * @brief Деструктор
+*/
     ~MainWindow();
+/**
+ * @brief Функция для получения ссылки на главное окно
+ * @param parent - родмтель
+ * @return Ссылка на главное окно
+ */
     static MainWindow* GetInstance(QWidget* parent = 0);
-    QGraphicsView* GetInstanceGraphicsView();
+/**
+ * @brief Функция получения ссылки на нужный виджет для отображения грфической сцены
+ * @param number - номер виджета для отображения грфической сцены
+ * @return Ссылка на выбранный виджет для отображения грфической сцены
+ */
+    QGraphicsView* GetInstanceGraphicsView(int number);
+/**
+ * @brief Функция для получения ссылки на нужную кнопку
+ * @param number - номер кнопки
+ * @return Ссылка на нужную кнопку
+ */
+    QPushButton* GetInstanceButton(int number);
 
-    static MainWindow* mainInstance;
+    static MainWindow* mainInstance;    ///< Ссылка на главное окно
 
 //    void question_count_players();
 
 public:
     Ui::MainWindow *ui;
 
-
-private slots:
-    void on_pushButton_clicked();
 };
-
-
-class New_Form : public QWidget
-{
-    Q_OBJECT
-public:
-    int count_players = 2;//количество игроков
-    QList <QString> list_name_players;//Имена всех игроков
-
-    void create_window(MainWindow *parent_window);//Функция создания нового окна(ввод количества игроков и ввод имён)
-
-
-public slots:
-    void spinboxValueChanged(int value){count_players = value;}//Слот передающий значения в переменную класс при изменении значения в QSpinBox
-
-
-};
-
-
 
 #endif // MAINWINDOW_H
